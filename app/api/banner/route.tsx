@@ -63,6 +63,10 @@ export async function GET(request: Request) {
     const playersPath = generatePath(playersData, chartWidth, chartHeight);
     const playersFill = generatePath(playersData, chartWidth, chartHeight, true);
 
+    // Get absolute URL for the background image (assuming it's in public/bg.png)
+    const url = new URL(request.url);
+    const bgUrl = `${url.protocol}//${url.host}/bg.png`;
+
     return new ImageResponse(
       (
         <div
@@ -81,7 +85,7 @@ export async function GET(request: Request) {
               flexDirection: 'column',
               width: '100%',
               height: '100%',
-              backgroundColor: '#1E1E2E', // Dark rounded background to work on both light/dark forums
+              backgroundColor: '#1E1E2E', 
               borderRadius: '32px',
               border: '2px solid rgba(255,255,255,0.1)',
               boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
@@ -90,6 +94,32 @@ export async function GET(request: Request) {
               fontFamily: 'sans-serif',
             }}
           >
+            {/* Background Image Layer */}
+            <img
+              src={bgUrl}
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                opacity: 0.6, // Blend the image with the dark background
+              }}
+            />
+
+            {/* Dark Overlay for Readability */}
+            <div
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                backgroundColor: 'rgba(20, 20, 30, 0.4)', // Dark overlay
+              }}
+            />
+
             {/* Header section */}
             <div
               style={{
@@ -101,20 +131,20 @@ export async function GET(request: Request) {
               }}
             >
               <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <span style={{ color: '#A6ACCD', fontSize: 24, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 2 }}>
+                <span style={{ color: '#A6ACCD', fontSize: 24, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 2, textShadow: '0px 2px 4px rgba(0,0,0,0.5)' }}>
                   Live Statistics
                 </span>
-                <span style={{ color: '#FFFFFF', fontSize: 42, fontWeight: 800, marginTop: 4 }}>
+                <span style={{ color: '#FFFFFF', fontSize: 42, fontWeight: 800, marginTop: 4, textShadow: '0px 2px 6px rgba(0,0,0,0.8)' }}>
                   {pluginName}
                 </span>
               </div>
               
               <div style={{ display: 'flex', gap: '30px' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', textShadow: '0px 2px 4px rgba(0,0,0,0.5)' }}>
                   <span style={{ color: '#82AAFF', fontSize: 20, fontWeight: 600, textTransform: 'uppercase' }}>Servers</span>
                   <span style={{ color: '#FFFFFF', fontSize: 36, fontWeight: 800 }}>{currentServers.toLocaleString()}</span>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', textShadow: '0px 2px 4px rgba(0,0,0,0.5)' }}>
                   <span style={{ color: '#F07178', fontSize: 20, fontWeight: 600, textTransform: 'uppercase' }}>Players</span>
                   <span style={{ color: '#FFFFFF', fontSize: 36, fontWeight: 800 }}>{currentPlayers.toLocaleString()}</span>
                 </div>
@@ -131,16 +161,16 @@ export async function GET(request: Request) {
                 right: 0,
                 height: `${chartHeight}px`,
                 width: '100%',
-                opacity: 0.8,
+                opacity: 0.9,
               }}
             >
               <svg width="100%" height="100%" viewBox={`0 0 ${chartWidth} ${chartHeight}`} preserveAspectRatio="none">
                 {/* Players Chart (Red) */}
-                <path d={playersFill} fill="rgba(240, 113, 120, 0.2)" />
+                <path d={playersFill} fill="rgba(240, 113, 120, 0.4)" />
                 <path d={playersPath} fill="none" stroke="#F07178" strokeWidth="4" />
 
                 {/* Servers Chart (Blue) */}
-                <path d={serversFill} fill="rgba(130, 170, 255, 0.3)" />
+                <path d={serversFill} fill="rgba(130, 170, 255, 0.5)" />
                 <path d={serversPath} fill="none" stroke="#82AAFF" strokeWidth="4" />
               </svg>
             </div>
@@ -153,7 +183,7 @@ export async function GET(request: Request) {
                 left: 0,
                 right: 0,
                 height: '40%',
-                background: 'linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 100%)',
+                background: 'linear-gradient(180deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0) 100%)',
                 pointerEvents: 'none',
               }}
             />
