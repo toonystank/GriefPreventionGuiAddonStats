@@ -73,8 +73,8 @@ export async function GET(request: Request) {
     const patternUrl = `${url.protocol}//${url.host}/pattern.png`;
 
     /* ── Colour tokens (matching 2026 banner theme) ── */
-    const CREAM = '#F5F0E1';       // Warm cream text
-    const CREAM_DIM = '#C8C0A8';   // Dimmed cream for labels
+    const CREAM = '#FFFFFF';       // Pure white for maximum contrast
+    const CREAM_DIM = '#E8E4D5';   // Lighter dimmed cream for labels
     const OLIVE_DARK = 'rgba(50, 58, 42, 0.3)';  // Light olive tint (brighter to match 2026 banner)
     const EMERALD = '#6DBF7B';     // Chart line — servers (green fits MC theme)
     const GOLD = '#F0C850';        // Chart line — players (gold/yellow like stars)
@@ -121,18 +121,30 @@ export async function GET(request: Request) {
           />
 
           {/* ── Pattern overlay (matching 2026 banner — zoomed in) ── */}
-          <img
-            src={patternUrl}
+          <div
             style={{
               position: 'absolute',
-              top: '-50%',
-              left: '-50%',
-              width: '250%',
-              height: '250%',
-              objectFit: 'cover',
-              opacity: 0.12,
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              overflow: 'hidden',
+              display: 'flex',
             }}
-          />
+          >
+            <img
+              src={patternUrl}
+              style={{
+                position: 'absolute',
+                top: '-200px', // Equivalent to -50% of 400px
+                left: '-400px', // Equivalent to -50% of 800px
+                width: '2000px', // Equivalent to 250% of 800px
+                height: '1000px', // Equivalent to 250% of 400px
+                objectFit: 'cover',
+                opacity: 0.12,
+              }}
+            />
+          </div>
 
           {/* ── Bottom gradient fade for chart readability ── */}
           <div
@@ -141,8 +153,8 @@ export async function GET(request: Request) {
               bottom: 0,
               left: 0,
               width: '100%',
-              height: '50%',
-              background: 'linear-gradient(180deg, rgba(55,65,45,0) 0%, rgba(55,65,45,0.5) 50%, rgba(55,65,45,0.8) 100%)',
+              height: '65%', // Covers the bottom section to create a smooth fade
+              background: 'linear-gradient(180deg, rgba(40,48,35,0) 0%, rgba(40,48,35,0.8) 55%, rgba(40,48,35,1) 100%)',
             }}
           />
 
@@ -184,7 +196,7 @@ export async function GET(request: Request) {
                     fontWeight: 700,
                     textTransform: 'uppercase',
                     letterSpacing: 3,
-                    textShadow: '0 1px 4px rgba(0,0,0,0.7)',
+                    textShadow: '0 2px 6px rgba(0,0,0,0.9), 0 1px 2px rgba(0,0,0,1)',
                   }}
                 >
                   Live Statistics
@@ -196,7 +208,7 @@ export async function GET(request: Request) {
                   fontSize: 34,
                   fontWeight: 800,
                   lineHeight: 1.1,
-                  textShadow: '0 2px 8px rgba(0,0,0,0.8), 0 1px 2px rgba(0,0,0,0.9)',
+                  textShadow: '0 4px 16px rgba(0,0,0,0.95), 0 2px 4px rgba(0,0,0,1)',
                 }}
               >
                 {pluginName}
