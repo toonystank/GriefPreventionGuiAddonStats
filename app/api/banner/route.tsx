@@ -1,34 +1,31 @@
 import { ImageResponse } from 'next/og';
 
-export const runtime = 'edge';
-export const revalidate = 3600; // Cache for 1 hour
+export const dynamic = 'force-dynamic';
 
 const PLUGIN_ID = 21552;
 
-function generateSmoothPath(data: any[], width: number, height: number, isFill = false) {
+function generatePath(data: any[], width: number, height: number, isFill = false) {
   if (!data || data.length === 0) return '';
-
+  
   const minX = Math.min(...data.map((d) => d[0]));
   const maxX = Math.max(...data.map((d) => d[0]));
-  const minY = 0;
-  const maxY = Math.max(...data.map((d) => d[1])) * 1.2;
-
+  const minY = 0; 
+  const maxY = Math.max(...data.map((d) => d[1])) * 1.3; // 30% top padding
+  
+  // Prevent division by zero
   const rangeX = maxX - minX || 1;
   const rangeY = maxY - minY || 1;
 
-  const points = data.map((point) => ({
-    x: ((point[0] - minX) / rangeX) * width,
-    y: height - ((point[1] - minY) / rangeY) * height,
-  }));
-
-  let d = `M ${points[0].x} ${points[0].y} `;
-
-  for (let i = 1; i < points.length; i++) {
-    const prev = points[i - 1];
-    const curr = points[i];
-    const cpX = (prev.x + curr.x) / 2;
-    d += `Q ${cpX} ${prev.y}, ${curr.x} ${curr.y} `;
-  }
+  let d = '';
+  data.forEach((point, i) => {
+    const x = ((point[0] - minX) / rangeX) * width;
+    const y = height - ((point[1] - minY) / rangeY) * height;
+    if (i === 0) {
+      d += `M ${x} ${y} `;
+    } else {
+      d += `L ${x} ${y} `;
+    }
+  });
 
   if (isFill) {
     d += `L ${width} ${height} L 0 ${height} Z`;
@@ -37,36 +34,22 @@ function generateSmoothPath(data: any[], width: number, height: number, isFill =
   return d;
 }
 
-function formatNumber(n: number): string {
-  if (n >= 1000) return (n / 1000).toFixed(1) + 'k';
-  return n.toLocaleString();
-}
-
 export async function GET(request: Request) {
   try {
     const [metaRes, serversRes, playersRes] = await Promise.all([
-      fetch(`https://bstats.org/api/v1/plugins/${PLUGIN_ID}`),
-      fetch(`https://bstats.org/api/v1/plugins/${PLUGIN_ID}/charts/servers/data?maxElements=100`),
-      fetch(`https://bstats.org/api/v1/plugins/${PLUGIN_ID}/charts/players/data?maxElements=100`),
+      fetch(`https://bstats.org/api/v1/plugins/${PLUGIN_ID}`, { next: { revalidate: 60 } }),
+      fetch(`https://bstats.org/api/v1/plugins/${PLUGIN_ID}/charts/servers/data?maxElements=100`, { next: { revalidate: 60 } }),
+      fetch(`https://bstats.org/api/v1/plugins/${PLUGIN_ID}/charts/players/data?maxElements=100`, { next: { revalidate: 60 } })
     ]);
 
     const meta = await metaRes.json();
     const serversData = await serversRes.json();
     const playersData = await playersRes.json();
 
-    const pluginName = meta.name || 'Grief Prevention GUI Addon';
+    const pluginName = meta.name || "Grief Prevention GUI Addon";
     const currentServers = serversData.length > 0 ? serversData[serversData.length - 1][1] : 0;
     const currentPlayers = playersData.length > 0 ? playersData[playersData.length - 1][1] : 0;
 
-    const WIDTH = 800;
-    const HEIGHT = 400;
-    const CHART_HEIGHT = 200;
-    const CHART_WIDTH = WIDTH;
-
-    const serversLine = generateSmoothPath(serversData, CHART_WIDTH, CHART_HEIGHT);
-    const serversFill = generateSmoothPath(serversData, CHART_WIDTH, CHART_HEIGHT, true);
-    const playersLine = generateSmoothPath(playersData, CHART_WIDTH, CHART_HEIGHT);
-    const playersFill = generateSmoothPath(playersData, CHART_WIDTH, CHART_HEIGHT, true);
 
     const url = new URL(request.url);
     const bgUrl = `${url.protocol}//${url.host}/bg.png`;
@@ -352,7 +335,9 @@ export async function GET(request: Request) {
         width: WIDTH,
         height: HEIGHT,
         headers: {
-          'Cache-Control': 'public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400',
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
         },
       }
     );
